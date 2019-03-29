@@ -1,2 +1,2 @@
 # Compilers
-Practice for UA Compilers ESCOM
+Practices for UA Compilers ESCOM
