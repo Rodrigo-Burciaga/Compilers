@@ -1,12 +1,15 @@
-#PRACTICE 3 LEXICAL ANALYZER IN FLEX
+# PRACTICE 3 LEXICAL ANALYZER IN FLEX
 
-##Usage
+## Usage
 
 ```
 * flex practice.l
 * gcc lex.yy.c -lfl -o practice
 * ./practice
 ```
+
+
+## What does
 
 The program recognizes:
 * variables "c syntax"
