@@ -2,9 +2,9 @@
 #include "practice4.tab.h"
 %}
 
-decimal (|
 
-NUMBER [1-9]{1}[0-9]*|(0\.0){1}|(([1-9]{1}[0-9]*)(\.([0-9]*[1-9][0-9]*)))|([0]{1})|(\.0)|(0?\.[0-9]*[1-9][0-9]*)
+INT [1-9]{1}[0-9]*|([0]{1})
+DECIMAL (0\.0){1}|(([1-9]{1}[0-9]*)(\.([0-9]*[0-9][0-9]*)))|(\.0)|(0?\.[0-9]*[1-9][0-9]*)
 CHARACTERS [a-zA-Z 0-9@\._-]	
 cadena \"{CHARACTERS}*\"
 operadores "+"|"*"|"/"|"-"|"^"
@@ -13,10 +13,17 @@ coma ","
 pow [pP][oO][wW]
 
 %%
-{NUMBER} 	{ 
-			printf("Numero %s\n",yytext);
-			yylval.numero = atof(yytext);
+
+{INT} 		{
+			printf("Entero %s\n",yytext);
+			yylval.entero = atoi(yytext);
             return (ENTERO);
+			}
+
+{DECIMAL} 	{
+			printf("Decimal %s\n",yytext);
+			yylval.flotante = atof(yytext);
+            return (DECIMAL);
         	}
 
 {operadores}	 	{
@@ -49,7 +56,7 @@ pow [pP][oO][wW]
 				}
 
 "\n"            {
-		printf("Salto de linea\n");
+				printf("Salto de linea\n");
                 return (yytext[0]);
                 }
 %%

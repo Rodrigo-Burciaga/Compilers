@@ -1,32 +1,34 @@
 %{
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 extern int yylex(void);
 void yyerror(char *s);
 int contarDigitos();
 char *potenciarCadena(char *cadena, int num, int digitos);
+char *concatenarCadenas(char *texto1, char *texto2);
 double potency(double base, double exponent);
+char *convertToString(int number);
 %}
              
 /* Declaraciones de BISON */
 %union{
-	float numero;
+	int   entero;
+	float flotante;
 	char* cadena;
 }
 
-%token <numero> ENTERO
+%token <entero> ENTERO
+%token <flotante> DECIMAL
 %token <cadena> CAD
 %token POW 
 
-%type <numero> exp
-%type <numero> potenciaNum
-%type <cadena> texto
-%type <cadena> potencia
-  
+%type <entero> exp
+%type <flotante> expFloat
+%type <cadena> texto  
 %left '^'           
 %left '+' %left '-'
-%left '*' %left '/'
+%left '*' '/'
 %left '('  %left ')'
 
              
@@ -37,50 +39,65 @@ input:   /* cadena vacía */
         | input line 
 ;
 
-line:     '\n'
-        | exp '\n'  { printf ("\tresultado: %f\n\n", $1); }
-        | texto  { printf ("\tresultado: %s\n\n", $1); } 
-        | potencia { printf("\tpotencia cadenas: %s\n\n", $1); }
-        | potenciaNum { printf("\tpotencia: %f\n\n", $1);}
+line:   '\n'
+		| exp '\n'  { printf ("\tresultado: %d\n\n", $1); }
+		| expFloat '\n' { printf("\tflotante: %f\n", $1);}
+        | texto '\n' { printf ("\tresultado: %s\n\n", $1); } 
 ;
-             
-exp:     ENTERO	{ $$ = $1;}
-	| exp '+' exp        { $$ = $1 + $3;    }
-	| exp '*' exp        { $$ = $1 * $3;	}
-	| exp '/' exp        { $$ = $1 / $3;	}
-	| exp '-' exp		 { $$ = $1 - $3;	}	
-	| '-' exp			 { $$ = -$2;		}
-	| '(' exp ')'		 { $$ = $2;			}
-;
-
-texto: CAD
-	| texto '+' CAD  {
-			//printf("\n%s, %s\n", $1,$3);
-			int texto1 = contarDigitos($1);
-			int texto2 = contarDigitos($3);
-			$$ = malloc(sizeof(char)*(texto1 + texto2 + 1));
-			int i=0;
-			for(i;i < texto1; i++){
-				*($$+i) = *$1++;
-			}
-			for(i;i < (texto1 + texto2); i++){
-				*($$+i) = *$3++;
-			}
+            
+exp: 	ENTERO { $$ = $1;}
+		| exp '+' exp        { $$ = $1 + $3;    }
+		| exp '*' exp        { $$ = $1 * $3;	}
+		| exp '/' exp        { $$ = $1 / $3;	}
+		| exp '-' exp		 { $$ = $1 - $3;	}	
+		| '-' exp			 { $$ = -$2;		}
+		| '(' exp ')'		 { $$ = $2;			}
+		| POW '(' exp ',' exp ')'	{ $$ = potency($3, $5);}
+		| POW '(' exp ',' expFloat ')'	{ 
+			int exponente  = $5;
+			$$ = potency($3, exponente);
 		}
 ;
 
-potencia: texto '^' ENTERO {
-			int nDigitos = contarDigitos($1);
-			char *potencia = potenciarCadena($1, $3, nDigitos);
-			$$ = potencia;
-		} 
+expFloat:	DECIMAL { $$ = $1;}
+			| expFloat '-' exp		 		{ $$ = $1 - $3;	}
+			| exp '-' expFloat		 		{ $$ = $1 - $3;	}
+			| expFloat '-' expFloat			{ $$ = $1 - $3;	}
+			| expFloat '+' exp		 		{ $$ = $1 + $3;	}
+			| exp '+' expFloat		 		{ $$ = $1 + $3;	}
+			| expFloat '+' expFloat			{ $$ = $1 + $3;	}
+			| expFloat '*' exp		 		{ $$ = $1 * $3;	}
+			| exp '*' expFloat		 		{ $$ = $1 * $3;	}
+			| expFloat '*' expFloat			{ $$ = $1 * $3;	}
+			| expFloat '/' exp		 		{ $$ = $1 / $3;	}
+			| exp '/' expFloat		 		{ $$ = $1 / $3;	}
+			| expFloat '/' expFloat			{ $$ = $1 / $3;	}
+			| '-' expFloat					{ $$ = -$2;	   	}
+			| '(' expFloat ')'		 		{ $$ = $2;	   	}
+			| POW '(' expFloat ',' exp ')'	{ $$ = potency($3, $5);}
+			| POW '(' expFloat ',' expFloat ')'	{ 
+				int exponente  = $5;
+				$$ = potency($3, exponente);
+			}
+;
+			
+texto: 	CAD {printf("cadena\n");}
+		| texto '+' texto  {
+			$$ = concatenarCadenas($1,$3);
+		}
+		| texto '+' exp {
+			char *str = convertToString($3);
+			$$ = concatenarCadenas($1, str);
+		}
+		| '(' texto ')'		{ $$ = $2; }
+		| texto '^' exp {
+					int nDigitos = contarDigitos($1);
+					char *potencia = potenciarCadena($1, $3, nDigitos);
+					$$ = potencia;
+				}
 ;
 
-potenciaNum: POW '(' exp ',' exp ')' { 
-			$$ = potency($3, $5);
-			}
- 				       
-;     
+ 
 %%
 
 int main() {
@@ -129,4 +146,60 @@ double potency(double base, double exponent){
         --exponent;
     }
     return result;
+}
+
+char *convertToString(int number){
+	char buffer[50];
+	int i = 0;
+
+	bool isNeg = number < 0;
+
+	unsigned int n1 = isNeg ? -number : number;
+
+	while(n1!=0)
+	{
+	    buffer[i++] = n1%10+'0';
+	    n1=n1/10;
+	}
+
+	if(isNeg)
+	    buffer[i++] = '-';
+
+	buffer[i] = '\0';
+
+	for(int t = 0; t < i/2; t++)
+	{
+	    buffer[t] ^= buffer[i-t-1];
+	    buffer[i-t-1] ^= buffer[t];
+	    buffer[t] ^= buffer[i-t-1];
+	}
+
+	if(number == 0)
+	{
+	    buffer[0] = '0';
+	    buffer[1] = '\0';
+	}  
+
+	int size = contarDigitos(buffer) +1;
+	char *s = malloc(sizeof(char)*(size));
+	for (i=0; buffer[i] != 0; i++){
+		*(s+i) = buffer[i];
+	}
+	*(s+i) = '\0';
+	return s;
+
+}
+
+char *concatenarCadenas(char *cad1, char *cad2) {
+	int texto1 = contarDigitos(cad1);
+	int texto2 = contarDigitos(cad2);
+	char *s = malloc(sizeof(char)*(texto1 + texto2 + 1));
+	int i=0;
+	for(i;i < texto1; i++){
+		*(s+i) = *cad1++;
+	}
+	for(i;i < (texto1 + texto2); i++){
+		*(s+i) = *cad2++;
+	}
+	return s;
 }

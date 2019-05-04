@@ -46,8 +46,9 @@ extern int yydebug;
   enum yytokentype
   {
     ENTERO = 258,
-    CAD = 259,
-    POW = 260
+    DECIMAL = 259,
+    CAD = 260,
+    POW = 261
   };
 #endif
 
@@ -56,12 +57,13 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 13 "practice4.y" /* yacc.c:1909  */
+#line 15 "practice4.y" /* yacc.c:1909  */
 
-	float numero;
+	int   entero;
+	float flotante;
 	char* cadena;
 
-#line 65 "practice4.tab.h" /* yacc.c:1909  */
+#line 67 "practice4.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
