@@ -9,6 +9,7 @@ char *potenciarCadena(char *cadena, int num, int digitos);
 char *concatenarCadenas(char *texto1, char *texto2);
 double potency(double base, double exponent);
 char *convertToString(int number);
+char *falsoOVerdadero(unsigned int numero);
 %}
              
 /* Declaraciones de BISON */
@@ -16,18 +17,23 @@ char *convertToString(int number);
 	int   entero;
 	float flotante;
 	char* cadena;
+	unsigned int boolean;
 }
 
 %token <entero> ENTERO
 %token <flotante> DECIMAL
 %token <cadena> CAD
 %token POW 
+%token IF
 
 %type <entero> exp
 %type <flotante> expFloat
-%type <cadena> texto  
-%left '^'           
-%left '+' %left '-'
+%type <cadena> texto
+%type <boolean> condition
+
+          
+%left '+'  '-' 
+%left '^'
 %left '*' '/'
 %left '('  %left ')'
 
@@ -43,6 +49,7 @@ line:   '\n'
 		| exp '\n'  { printf ("\tresultado: %d\n\n", $1); }
 		| expFloat '\n' { printf("\tflotante: %f\n", $1);}
         | texto '\n' { printf ("\tresultado: %s\n\n", $1); } 
+        | condition '\n'{printf("\t%s\n", falsoOVerdadero($1));}
 ;
             
 exp: 	ENTERO { $$ = $1;}
@@ -96,6 +103,45 @@ texto: 	CAD {printf("cadena\n");}
 					$$ = potencia;
 				}
 ;
+
+condition: IF '(' exp '>' exp ')' ';' { 
+				unsigned int num = ($3 > $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '(' exp '<' exp ')' ';' { 
+				unsigned int num = ($3 < $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '(' expFloat '>' expFloat ')' ';' { 
+				unsigned int num = ($3 > $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '(' expFloat '<' expFloat ')' ';' { 
+				unsigned int num = ($3 < $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '(' expFloat '>' exp ')' ';' { 
+				unsigned int num = ($3 > $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '(' expFloat '<' exp ')' ';' { 
+				unsigned int num = ($3 < $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '(' exp '>' expFloat ')' ';' { 
+				unsigned int num = ($3 > $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '(' exp '<' expFloat ')' ';' { 
+				unsigned int num = ($3 < $5)? 1:0; 
+				$$ = num;
+			}
+			| IF '('condition ')' ';' { 
+				unsigned int num = ($3 == 1)? 1:0; 
+				$$ = num;
+			}
+
+			
 
  
 %%
@@ -202,4 +248,9 @@ char *concatenarCadenas(char *cad1, char *cad2) {
 		*(s+i) = *cad2++;
 	}
 	return s;
+}
+
+char *falsoOVerdadero(unsigned int numero){
+	char *boolean = (numero == 0)? "false" : "true";
+	return boolean;
 }

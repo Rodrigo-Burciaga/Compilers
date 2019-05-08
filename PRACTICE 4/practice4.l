@@ -10,6 +10,9 @@ cadena \"{CHARACTERS}*\"
 operadores "+"|"*"|"/"|"-"|"^"
 parentesis \(|\)
 coma ","
+puntoycoma ";"
+mayoromenor [<>]
+condition [iI][fF]
 pow [pP][oO][wW]
 
 %%
@@ -38,6 +41,21 @@ pow [pP][oO][wW]
 
 {coma}			{
 				printf("Coma\n");
+				return (yytext[0]);
+				}
+
+{puntoycoma}	{
+				printf("Punto y coma\n");
+				return (yytext[0]);
+				}
+
+{condition}		{
+				printf("Condicion\n");
+				return (IF);
+				}
+
+{mayoromenor}		{
+				printf("Mayor o menor\n");
 				return (yytext[0]);
 				}
 
