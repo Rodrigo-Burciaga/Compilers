@@ -40,11 +40,13 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 27 "practice5.y" /* yacc.c:1909  */
+#line 30 "practice5.y" /* yacc.c:1909  */
 
     #include "tablasimbolos.h"
+    #include <stdbool.h>
 
-#line 48 "practice5.tab.h" /* yacc.c:1909  */
+
+#line 50 "practice5.tab.h" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -67,7 +69,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 32 "practice5.y" /* yacc.c:1909  */
+#line 37 "practice5.y" /* yacc.c:1909  */
 
 	int   entero;
 	float flotante;
@@ -75,7 +77,7 @@ union YYSTYPE
 	unsigned int boolean;
 	TablaSimbolos *tabla;
 
-#line 79 "practice5.tab.h" /* yacc.c:1909  */
+#line 81 "practice5.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

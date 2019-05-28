@@ -18,6 +18,9 @@ void negarValorTablaSimbolos(TablaSimbolos *tablaSimbolos);
 void comprobarRestaExpFloat(TablaSimbolos *tabla, float valor, int inverse );
 void comprobarRestaExpresiones(TablaSimbolos *tabla, TablaSimbolos *tabla2);
 void comprobarMultiplicacionExpresiones(TablaSimbolos *tabla, TablaSimbolos *tabla2);
+bool mayorMenorCadena(char *cad1,char * cad2);
+char *stringRevert(char *cadena);
+
 
 
 #define INVERSE 1
@@ -26,6 +29,8 @@ void comprobarMultiplicacionExpresiones(TablaSimbolos *tabla, TablaSimbolos *tab
 
 %code requires {
     #include "tablasimbolos.h"
+    #include <stdbool.h>
+
 }
              
 /* Declaraciones de BISON */
@@ -140,8 +145,13 @@ texto: 	CAD { $$ = $1;}
 		}
 		| '(' texto ')'		{ $$ = $2; }
 		| texto '^' exp {
-					int nDigitos = contarDigitos($1);
-					char *potencia = potenciarCadena($1, $3, nDigitos);
+					char *cadena = $1;
+					if($3 < 0){
+						printf("%s\n", "siiiiiiii");
+						stringRevert($1);
+					}
+					int nDigitos = contarDigitos(cadena);
+					char *potencia = potenciarCadena(cadena, $3, nDigitos);
 					$$ = potencia;
 				}
 ;
@@ -181,6 +191,80 @@ condition: IF '(' exp '>' exp ')' ';' {
 			| IF '('condition ')' ';' { 
 				unsigned int num = ($3 == 1)? 1:0; 
 				$$ = num;
+			}
+			| IF '(' texto '>' texto ')' ';' {
+				 unsigned int comp = mayorMenorCadena($3,$5);
+				 $$ = comp;
+			
+			}
+			| IF '(' expVariable '>' expVariable ')' ';' {
+				unsigned int comp;
+				if ($3->tipoDato == CADENA && $5->tipoDato == CADENA) {
+					comp = mayorMenorCadena($3->valor.cadena,$5->valor.cadena);
+				 	$$ = comp;
+				} else {
+					printf("%s\n", "imposible de realizarse la operación");
+					comp = 0;
+				}		
+			}
+			| IF '(' expVariable '>' texto ')' ';' {
+				unsigned int comp;
+				if ($3->tipoDato == CADENA) {
+					comp = mayorMenorCadena($3->valor.cadena,$5);
+				 	$$ = comp;
+				} else {
+					printf("%s\n", "imposible de realizarse la operación");
+					comp = 0;
+				}		
+			}
+			| IF '(' texto '>' expVariable ')' ';' {
+				unsigned int comp;
+				if ($5->tipoDato == CADENA) {
+					comp = mayorMenorCadena($3, $5->valor.cadena);
+				 	$$ = comp;
+				} else {
+					printf("%s\n", "imposible de realizarse la operación");
+					comp = 0;
+				}		
+			}
+
+
+
+
+			| IF '(' texto '<' texto ')' ';' {
+				 unsigned int comp = mayorMenorCadena($5,$3);
+				 $$ = comp;
+			
+			}
+			| IF '(' expVariable '<' expVariable ')' ';' {
+				unsigned int comp;
+				if ($3->tipoDato == CADENA && $5->tipoDato == CADENA) {
+					comp = mayorMenorCadena($5->valor.cadena,$3->valor.cadena);
+				 	$$ = comp;
+				} else {
+					printf("%s\n", "imposible de realizarse la operación");
+					comp = 0;
+				}		
+			}
+			| IF '(' expVariable '<' texto ')' ';' {
+				unsigned int comp;
+				if ($3->tipoDato == CADENA) {
+					comp = mayorMenorCadena($5,$3->valor.cadena);
+				 	$$ = comp;
+				} else {
+					printf("%s\n", "imposible de realizarse la operación");
+					comp = 0;
+				}		
+			}
+			| IF '(' texto '<' expVariable ')' ';' {
+				unsigned int comp;
+				if ($5->tipoDato == CADENA) {
+					comp = mayorMenorCadena($5->valor.cadena,$3);
+				 	$$ = comp;
+				} else {
+					printf("%s\n", "imposible de realizarse la operación");
+					comp = 0;
+				}		
 			}
 
 ;
@@ -567,6 +651,22 @@ void comprobarRestaExpresiones(TablaSimbolos *tabla, TablaSimbolos *tabla2) {
 	}
 }
 
+bool mayorMenorCadena(char *cad1,char * cad2){
+	int i= 0;
+	int contador = 0;
+	while( *cad1 != 0) {
+		contador++;
+		cad1++;
+	}
+	int contador2 = 0;
+	while( *cad2 != 0) {
+		contador2++;
+		cad2++;
+	}
+	bool comprobacion = contador > contador2;
+	return comprobacion;
+}
 
+char *stringRevert(char *cadena){
 
-
+}
