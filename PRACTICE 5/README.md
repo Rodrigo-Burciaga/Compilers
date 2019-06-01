@@ -16,4 +16,4 @@ Basic interpreter that declares variables of types
 you can do almost all operations with this kind of types like concatenation, potency strings, sum, substraction, pow, declaration of variables and asignation of variables.
 
 
-for more information please read the README.md
+**For more information please read the .pdf**
