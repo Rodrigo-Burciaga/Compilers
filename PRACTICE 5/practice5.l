@@ -11,7 +11,7 @@ DECIMAL (0\.0){1}|(([1-9]{1}[0-9]*)(\.([0-9]*[0-9][0-9]*)))|(\.0)|(0?\.[0-9]*[1-
 CHARACTERS [a-zA-Z 0-9@\._-]	
 cadena \"{CHARACTERS}*\"
 variable [a-zA-Z_]{1}[a-zA-Z0-9_]*
-operadores "+"|"*"|"/"|"-"|"^"
+operadores "+"|"*"|"/"|"-"|"^"|"%"
 parentesis \(|\)
 coma ","
 imprimirTabla printTable

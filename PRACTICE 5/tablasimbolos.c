@@ -206,7 +206,6 @@ TablaSimbolos *declararExpAVariable(char *tipo, char *var, TablaSimbolos *tablaS
 		return tablaNueva;
 	} else {
 		yyerror("Variable antes añadida");
-		exit(-1);
 	}
 }
 
@@ -224,7 +223,6 @@ TablaSimbolos *asignarExpAVariable(char *var, TablaSimbolos *tablaSimbolos) {
 		return tabla;
 	} else {
 		yyerror("No definido");
-		exit(-1);
 	}
 }
 
@@ -239,7 +237,6 @@ void asignarAEntero(TablaSimbolos *tabla, TablaSimbolos *tabla2) {
 		tabla->valor.entero = valor;
 	} else {
 		yyerror("No se puede asignar");
-		exit(-1);
 	}
 }
 
@@ -253,7 +250,6 @@ void asignarAFlotante(TablaSimbolos *tabla, TablaSimbolos *tabla2) {
 		tabla->valor.flotante = valor;
 	} else {
 		yyerror("No se puede asignar");
-		exit(-1);
 	}
 }
 
@@ -265,7 +261,6 @@ void asignarACadena(TablaSimbolos *tabla, TablaSimbolos *tabla2) {
 		tabla->valor.cadena = str;
 	} else {
 		yyerror("No se puede asignar");
-		exit(-1);
 	}
 }
 
@@ -274,7 +269,6 @@ TablaSimbolos *asignarEnteroAVar(char *var, int valor) {
 	if (tablaSimbolos != NULL) {
 		if(tablaSimbolos->tipoDato == CADENA){
 			yyerror("No se puede asignar");
-			exit(-1);
 		} else if (tablaSimbolos->tipoDato == FLOTANTE) {
 			tablaSimbolos->valor.flotante = valor;
 		} else {
@@ -283,7 +277,6 @@ TablaSimbolos *asignarEnteroAVar(char *var, int valor) {
 		return tablaSimbolos;							
 	} else {
 		yyerror("No definido");
-		exit(-1);
 	}
 }
 
@@ -292,7 +285,6 @@ TablaSimbolos *asignarFlotanteAVar(char *var, float valor) {
 	if (tablaSimbolos != NULL) {
 		if(tablaSimbolos->tipoDato == CADENA){
 			yyerror("No se puede asignar");
-			exit(-1);
 		} else if (tablaSimbolos->tipoDato == FLOTANTE) {
 			tablaSimbolos->valor.flotante = valor;
 		} else {
@@ -301,7 +293,6 @@ TablaSimbolos *asignarFlotanteAVar(char *var, float valor) {
 		return tablaSimbolos;							
 	} else {
 		yyerror("No definido");
-		exit(-1);
 	}
 }
 
@@ -310,13 +301,11 @@ TablaSimbolos *asignarTextoAVar(char *var, char *valor) {
 	if (tablaSimbolos != NULL) {
 		if(tablaSimbolos->tipoDato != CADENA){
 			yyerror("No se puede asignar");
-			exit(-1);
 		} else  {
 			tablaSimbolos->valor.cadena = valor;
 		} 
 		return tablaSimbolos;							
 	} else {
 		yyerror("No definido");
-		exit(-1);
 	}
 }

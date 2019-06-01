@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <math.h>
 #define INVERSE 1
 #define NOT_INVERSE 0 
 
@@ -247,12 +247,13 @@ void comprobarPotenciaExpFloat(TablaSimbolos *tablaSimbolos, float exponente){
 }
 
 double potency(double base, double exponent){
-	double result = 1;	
+	/*double result = 1;	
 	while (exponent != 0) {
         result *= base;
         --exponent;
     }
-    return result;
+    return result;*/
+    return pow(base, exponent);
 }
 
 void comprobarPotenciaExpresiones(TablaSimbolos *tabla, TablaSimbolos *tabla2) {

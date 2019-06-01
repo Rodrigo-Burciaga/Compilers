@@ -4,6 +4,7 @@
 #include "tablasimbolos.h"
 #include "operaciones.h"
 #include <stdbool.h>
+#include <math.h>
 extern int yylex(void);
 extern void yyerror(char *s);
 
@@ -20,6 +21,11 @@ void comprobarRestaExpresiones(TablaSimbolos *tabla, TablaSimbolos *tabla2);
 void comprobarMultiplicacionExpresiones(TablaSimbolos *tabla, TablaSimbolos *tabla2);
 bool mayorMenorCadena(char *cad1,char * cad2);
 char *stringRevert(char *cadena);
+void asignarFloat(char *tipo, char *variable,float asignacion);
+void asignarInt(char *tipo, char *variable, int asignacion);
+char *stringRevert(char *cadena);
+void asignarText(char *tipo, char *variable, char *asignacion);
+
 
 
 
@@ -30,7 +36,7 @@ char *stringRevert(char *cadena);
 %code requires {
     #include "tablasimbolos.h"
     #include <stdbool.h>
-
+    #include <string.h>
 }
              
 /* Declaraciones de BISON */
@@ -62,7 +68,7 @@ char *stringRevert(char *cadena);
 %left '='       
 %left '+'  '-' 
 %left '^'
-%left '*' '/'
+%left '*' '/' '%'
 %left '(' ')'
 
              
@@ -75,7 +81,7 @@ input:   /* cadena vacía */
 
 line:   '\n'
 		| exp '\n'  { printf ("\t\tresultado: %d\n\n", $1); }
-		| expFloat '\n' { printf("\t\tflotante: %f\n", $1);}
+		| expFloat '\n' { printf("\t\tresultado: %f\n", $1);}
         | texto '\n' { printf ("\t\tresultado: %s\n\n", $1); } 
         | condition '\n'{printf("\t\t%s\n", falsoOVerdadero($1));}
         | declarationVariable '\n' {}
@@ -96,14 +102,10 @@ exp: 	INTEGER 						{ $$ = $1;				}
 		| exp '+' exp        			{ $$ = $1 + $3; 		}
 		| exp '*' exp       			{ $$ = $1 * $3;			}
 		| exp '/' exp       			{ $$ = $1 / $3;			}
-		| exp '-' exp		 			{ $$ = $1 - $3;			}	
+		| exp '-' exp		 			{ $$ = $1 - $3;			}
+		| exp '%' exp 					{ $$ = $1 % $3;			}	
 		| '-' exp			 			{ $$ = -$2;				}
 		| '(' exp ')'		 			{ $$ = $2;				}
-		| POW '(' exp ',' exp ')'		{ $$ = potency($3, $5);	}
-		| POW '(' exp ',' expFloat ')'	{ 
-			int exponente  = $5;
-			$$ = potency($3, exponente);
-		}
 		
 ;
 
@@ -124,9 +126,15 @@ expFloat:	DECIMAL { $$ = $1;}
 			| '(' expFloat ')'		 		{ $$ = $2;	   	}
 			| POW '(' expFloat ',' exp ')'	{ $$ = potency($3, $5);}
 			| POW '(' expFloat ',' expFloat ')'	{ 
-				int exponente  = $5;
-				$$ = potency($3, exponente);
+				$$ = potency($3, $5);
 			}
+			| POW '(' exp ',' exp ')'		{ $$ = potency($3, $5);	}
+			| POW '(' exp ',' expFloat ')'	{ 
+				$$ = potency($3, $5);
+			}
+			| exp '%' expFloat 				{ $$ = fmod($1, $3);			}
+			| expFloat '%' exp				{ $$ = fmod($1, $3);			}
+			| expFloat '%' expFloat  		{ $$ = fmod($1, $3);			}
 
 
 ;
@@ -146,13 +154,15 @@ texto: 	CAD { $$ = $1;}
 		| '(' texto ')'		{ $$ = $2; }
 		| texto '^' exp {
 					char *cadena = $1;
+					int npotencia = $3;
 					if($3 < 0){
-						printf("%s\n", "siiiiiiii");
-						stringRevert($1);
-					}
+						cadena = stringRevert($1);
+						npotencia *= -1;
+					} 
 					int nDigitos = contarDigitos(cadena);
-					char *potencia = potenciarCadena(cadena, $3, nDigitos);
+					char *potencia = potenciarCadena(cadena, npotencia, nDigitos);
 					$$ = potencia;
+					
 				}
 ;
 
@@ -227,10 +237,6 @@ condition: IF '(' exp '>' exp ')' ';' {
 					comp = 0;
 				}		
 			}
-
-
-
-
 			| IF '(' texto '<' texto ')' ';' {
 				 unsigned int comp = mayorMenorCadena($5,$3);
 				 $$ = comp;
@@ -273,16 +279,13 @@ declarationVariable: 	TIPO VAR  ';' {
 							crearTablaSimbolos($1, $2);	
 						}
 						| TIPO VAR '=' exp ';' {
-							crearTablaSimbolosConValor($1,$2, (void *) &($4)); 
+							asignarInt($1,$2,$4);
 						}	
 						| TIPO VAR '=' expFloat ';' {
-							crearTablaSimbolosConValor($1,$2, (void *) &($4)); 
+							asignarFloat($1, $2, $4);
 						}	
 						| TIPO VAR '=' texto ';' {
-							int digitos =  contarDigitos($4);
-							char *str = malloc(sizeof(char)*(digitos));
-							str = $4;
-							crearTablaSimbolosConValor($1,$2, (void *) str); 
+							asignarText($1, $2, $4);
 						} 
 						| TIPO VAR '=' expVariable ';' {
 							$$ = declararExpAVariable($1, $2, $4); 
@@ -668,5 +671,47 @@ bool mayorMenorCadena(char *cad1,char * cad2){
 }
 
 char *stringRevert(char *cadena){
+	int digitos = contarDigitos(cadena);
+	char *reverse = malloc(sizeof(char)*digitos);
+	digitos--;
+	int index = 0;
+	while(digitos >= 0){
+		*(reverse + index) = *(cadena+digitos);
+		digitos--;
+		index++;
+	}
+	return reverse;
+}
 
+void asignarFloat(char *tipo, char *variable,float asignacion){
+	if (strcmp(tipo, "int") == 0){
+		int valor = asignacion;
+		crearTablaSimbolosConValor(tipo,variable, (void *) &valor);
+	} else if (strcmp(tipo, "string") == 0){
+		yyerror("imposible asignar");
+	} else {
+		crearTablaSimbolosConValor(tipo, variable, (void *) &asignacion); 
+	}	
+}
+
+void asignarInt(char *tipo, char *variable, int asignacion){
+	if (strcmp(tipo, "int") == 0){
+		crearTablaSimbolosConValor(tipo,variable, (void *) &asignacion);
+	} else if (strcmp(tipo, "string") == 0){
+		yyerror("imposible asignar");
+	} else {
+		float valor = asignacion;
+		crearTablaSimbolosConValor(tipo, variable, (void *) &valor); 
+	}	
+}
+
+void asignarText(char *tipo, char *variable, char *asignacion){
+	if (strcmp(tipo, "string") == 0){
+		int digitos =  contarDigitos(asignacion);
+		char *str = malloc(sizeof(char)*(digitos));
+		str = asignacion;
+		crearTablaSimbolosConValor(tipo,variable, (void *) asignacion);
+	} else {
+		yyerror("imposible asignar");
+	}	
 }

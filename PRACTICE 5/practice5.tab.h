@@ -40,11 +40,11 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 30 "practice5.y" /* yacc.c:1909  */
+#line 36 "practice5.y" /* yacc.c:1909  */
 
     #include "tablasimbolos.h"
     #include <stdbool.h>
-
+    #include <string.h>
 
 #line 50 "practice5.tab.h" /* yacc.c:1909  */
 
@@ -69,7 +69,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 37 "practice5.y" /* yacc.c:1909  */
+#line 43 "practice5.y" /* yacc.c:1909  */
 
 	int   entero;
 	float flotante;
